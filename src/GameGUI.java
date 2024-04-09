@@ -447,6 +447,10 @@ public class GameGUI extends JPanel {
                         secondsPassed = snapshot.getSecondsPassed();
                         updateButtons();
                         currentSnapshotIndex++;
+
+                        if (currentSnapshotIndex == gameSnapshots.size()) {
+                            gameFailed();
+                        }
                     } else {
                         replayFinished = true;
                         gameTimer.stop();
