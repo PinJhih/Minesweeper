@@ -113,6 +113,17 @@ public class Board {
         }
     }
 
+    public int getBonus() {
+        int b = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (flagged[i][j] && isMine(i, j))
+                    b += 5;
+            }
+        }
+        return b;
+    }
+
     public void toggleFlag(int row, int col) {
         if (row >= 0 && row < rows && col >= 0 && col < cols) {
             flagged[row][col] = !flagged[row][col];

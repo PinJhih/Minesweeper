@@ -29,6 +29,7 @@ public class GameGUI extends JPanel {
     private JButton speedButton;
     private JPanel labelPanel;
     private int numFlags;
+    private int score;
 
     private static class GameSnapshot {
         private Board board;
@@ -75,7 +76,7 @@ public class GameGUI extends JPanel {
 
         timerLabel = new JLabel("000");
         timerLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        timerLabel.setForeground(Color.RED); // 設置文字顏色為紅色
+        timerLabel.setForeground(Color.BLUE); // 設置文字顏色為紅色
         timerLabel.setOpaque(true); // 設置為不透明以顯示背景色
         timerLabel.setBackground(Color.BLACK); // 設置背景色為黑色
         timerLabel.setPreferredSize(new Dimension(70, 40));
@@ -89,7 +90,7 @@ public class GameGUI extends JPanel {
 
         flagsLabel = new JLabel("111");
         flagsLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        flagsLabel.setForeground(Color.RED); // 設置文字顏色為紅色
+        flagsLabel.setForeground(Color.YELLOW); // 設置文字顏色為紅色
         flagsLabel.setOpaque(true); // 設置為不透明以顯示背景色
         flagsLabel.setBackground(Color.BLACK); // 設置背景色為黑色
         flagsLabel.setPreferredSize(new Dimension(70, 40));
@@ -107,19 +108,19 @@ public class GameGUI extends JPanel {
             timerLabel.setOpaque(true);
 
             JLabel digit1 = new JLabel("0");
-            digit1.setForeground(Color.RED);
+            digit1.setForeground(new Color(0, 102, 204));
             digit1.setHorizontalAlignment(SwingConstants.RIGHT);
             digit1.setFont(digitalFont);
             timerLabel.add(digit1);
 
             JLabel digit2 = new JLabel("0");
-            digit2.setForeground(Color.RED);
+            digit2.setForeground(new Color(0, 102, 204));
             digit2.setHorizontalAlignment(SwingConstants.RIGHT);
             digit2.setFont(digitalFont);
             timerLabel.add(digit2);
 
             JLabel digit3 = new JLabel("0");
-            digit3.setForeground(Color.RED);
+            digit3.setForeground(new Color(0, 102, 204));
             digit3.setHorizontalAlignment(SwingConstants.RIGHT);
             digit3.setFont(digitalFont);
             timerLabel.add(digit3);
@@ -185,19 +186,19 @@ public class GameGUI extends JPanel {
             flagsLabel.setOpaque(true);
 
             JLabel digit1 = new JLabel("0");
-            digit1.setForeground(Color.RED);
+            digit1.setForeground(new Color(230, 92, 0));
             digit1.setHorizontalAlignment(SwingConstants.RIGHT);
             digit1.setFont(digitalFont);
             flagsLabel.add(digit1);
 
             JLabel digit2 = new JLabel("0");
-            digit2.setForeground(Color.RED);
+            digit2.setForeground(new Color(230, 92, 0));
             digit2.setHorizontalAlignment(SwingConstants.RIGHT);
             digit2.setFont(digitalFont);
             flagsLabel.add(digit2);
 
             JLabel digit3 = new JLabel("0");
-            digit3.setForeground(Color.RED);
+            digit3.setForeground(new Color(230, 92, 0));
             digit3.setHorizontalAlignment(SwingConstants.RIGHT);
             digit3.setFont(digitalFont);
             flagsLabel.add(digit3);
@@ -337,6 +338,7 @@ public class GameGUI extends JPanel {
         if (clear) {
             gameSnapshots.clear();
             replayFinished = false;
+            score = 100;
         }
         secondsPassed = 0;
         updateLabel(timerLabel, "000");
@@ -344,9 +346,11 @@ public class GameGUI extends JPanel {
         startTimer();
         // 重置棋盤狀態
         board.initBoard();
-        
+
         numFlags = board.getNumMines();
         updateLabel(flagsLabel, String.format("%03d", numFlags));
+
+        updateLabel(scoreLabel, String.format("%03d", score));
     }
 
     @Override
@@ -365,6 +369,13 @@ public class GameGUI extends JPanel {
                 secondsPassed++;
                 String timeString = String.format("%03d", secondsPassed);
                 updateLabel(timerLabel, timeString); // 更新 timerLabel 的文字
+
+                if (secondsPassed % 5 == 0) {
+                    if (score != 0) {
+                        score--;
+                        updateLabel(scoreLabel, String.format("%03d", score));
+                    }
+                }
             }
         });
         gameTimer.start();
@@ -381,8 +392,8 @@ public class GameGUI extends JPanel {
     }
 
     private void showNameInputDialog() {
+        int score_ = this.score;
         String name = "";
-        int score = secondsPassed;
         while (name.trim().isEmpty()) {
             JTextField textField = new JTextField();
             Object[] message = {
@@ -405,13 +416,13 @@ public class GameGUI extends JPanel {
                     JOptionPane.showMessageDialog(this, "Name is required!", "Error", JOptionPane.ERROR_MESSAGE);
                 } else {
 
-                    JOptionPane.showMessageDialog(this, "Name: " + name + " Score:" + score, "Score",
+                    JOptionPane.showMessageDialog(this, "Name: " + name + " Score:" + score_, "Score",
                             JOptionPane.PLAIN_MESSAGE);
-                    uploadScore(name, score); // 上傳成績
+                    uploadScore(name, score_); // 上傳成績
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Cancel upload score!", "Warn", JOptionPane.WARNING_MESSAGE);
-                JOptionPane.showMessageDialog(this, " Score:" + score, "Score",
+                JOptionPane.showMessageDialog(this, " Score:" + score_, "Score",
                         JOptionPane.PLAIN_MESSAGE);
                 break;
             }
@@ -469,6 +480,11 @@ public class GameGUI extends JPanel {
             gameResult = "Win!";
         } else if (board.getStatus() == Board.GameStatus.LOSE) {
             gameResult = "Failure!";
+            score -= 60;
+            score = Math.max(0, score);
+            score += board.getBonus();
+            score = Math.min(100, score);
+            updateLabel(scoreLabel, String.format("%03d", score));
             this.gameFailed();
         }
         showReplayDialog(gameResult);
