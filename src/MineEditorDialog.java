@@ -2,9 +2,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileWriter;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class MineEditorDialog extends JDialog {
     private Controller controller;
@@ -13,6 +16,7 @@ public class MineEditorDialog extends JDialog {
     private int remainingMines;
     private int rows;
     private int cols;
+    private ImageIcon bombIcon;
 
     public MineEditorDialog(Controller controller) {
         this.controller = controller;
@@ -25,7 +29,7 @@ public class MineEditorDialog extends JDialog {
     private void initialize() {
         this.setTitle("Mine Editor");
         this.setLayout(new BorderLayout());
-
+        bombIcon = resizeImageIcon(new ImageIcon(getClass().getResource("./img/bomb.png")), 40, 40);
         JPanel minePanel = new JPanel(new GridLayout(rows, cols));
         buttons = new JButton[rows][cols];
         for (int i = 0; i < rows; i++) {
@@ -54,7 +58,7 @@ public class MineEditorDialog extends JDialog {
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                saveMapToFile();
+                uploadMap();
             }
         });
         controlPanel.add(saveButton);
@@ -78,16 +82,16 @@ public class MineEditorDialog extends JDialog {
 
     // 切換地雷狀態
     private void toggleMine(JButton button, int row, int col) {
-        if (button.getText().equals("M")) {
-            button.setText("");
-            remainingMines++;
-        } else {
+        if (button.getIcon() == null) {
             if (remainingMines > 0) { // 檢查是否還有剩餘地雷可放置
-                button.setText("M");
+                button.setIcon(bombIcon);
                 remainingMines--;
             } else {
                 JOptionPane.showMessageDialog(this, "已達到最大地雷數量限制", "提示", JOptionPane.WARNING_MESSAGE);
             }
+        } else {
+            button.setIcon(null);
+            remainingMines++;
         }
         updateRemainingMinesLabel(); // 更新剩餘地雷數標籤
     }
@@ -101,33 +105,58 @@ public class MineEditorDialog extends JDialog {
         }
     }
 
-    // 將地圖存儲為文件
-    private void saveMapToFile() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("保存地图文件");
-        int userSelection = fileChooser.showSaveDialog(this);
-        if (userSelection == JFileChooser.APPROVE_OPTION) {
-            File fileToSave = fileChooser.getSelectedFile();
-            try (FileWriter writer = new FileWriter(fileToSave)) {
-                StringBuilder mapData = new StringBuilder();
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < cols; j++) {
-                        if (buttons[i][j].getText().equals("M")) {
-                            // 格式化地雷位置数据，用逗号分隔行号和列号
-                            mapData.append((i + 1)).append(" ").append((char) ('A' + j)).append(",");
-                        }
-                    }
+    // 將地圖上傳
+    private void uploadMap() {
+        StringBuilder mapData = new StringBuilder();
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (buttons[i][j].getIcon() != null) {
+                    // 格式化地雷位置数据，用逗号分隔行号和列号
+                    mapData.append((i + 1)).append(" ").append((char) ('A' + j)).append(",");
                 }
-                // 删除末尾的逗号
-                if (mapData.length() > 0) {
-                    mapData.deleteCharAt(mapData.length() - 1);
-                }
-                // 写入地图数据到文件
-                writer.write(mapData.toString());
-                JOptionPane.showMessageDialog(this, "地图保存成功！", "成功", JOptionPane.INFORMATION_MESSAGE);
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "保存地图时出错： " + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
             }
         }
+
+        // 删除末尾的逗号
+        if (mapData.length() > 0) {
+            mapData.deleteCharAt(mapData.length() - 1);
+        }
+
+        try {
+            URL url = new URL("http://localhost:3000/api/board");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+            conn.setDoOutput(true);
+
+            String jsonInputString = "{\"board\": \"" + mapData.toString() + "\"}";
+
+            System.out.println(jsonInputString);
+
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = jsonInputString.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine = null;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+                System.out.println(response.toString());
+                JOptionPane.showMessageDialog(this, "地圖上傳成功！", "成功", JOptionPane.INFORMATION_MESSAGE);
+            }
+
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "地圖上傳失敗： " + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private ImageIcon resizeImageIcon(ImageIcon icon, int width, int height) {
+        Image img = icon.getImage();
+        Image resizedImg = img.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        return new ImageIcon(resizedImg);
     }
 }
