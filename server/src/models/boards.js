@@ -1,10 +1,7 @@
 let db = require("../utils/database");
 
 // TODO: load list of map
-let boards = [
-  `1 C\n4 B\n6 C\n3 D\n7 H\n6 B\n3 A`,
-  `2 A\n7 C\n4 C\n3 E\n2 H\n5 A\n4 C`,
-];
+var boards = [];
 
 let index = 0;
 setInterval(() => {
@@ -12,17 +9,24 @@ setInterval(() => {
   index %= boards.length;
 }, 1000 * 60);
 
+async function init() {
+  boards = await db.query("SELECT content FROM board");
+  console.log(boards);
+}
+
 async function get() {
-  return boards[index];
+  return boards[index].content;
 }
 
 async function add(content) {
   let sql = `INSERT INTO board (content) VALUES ("${content}")`;
   try {
     await db.query(sql);
+    boards.push({ content: content });
+    console.log(boards);
   } catch (e) {
     console.error("[Error] Cannot add boards to SQLite\n", e);
   }
 }
 
-module.exports = { get, add };
+module.exports = { get, add, init };

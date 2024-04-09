@@ -5,6 +5,8 @@ const httpError = require("http-errors");
 const records = require("../models/records");
 const boards = require("../models/boards");
 
+boards.init();
+
 router.get("/", (req, res) => {
   res.send("OK!");
 });
