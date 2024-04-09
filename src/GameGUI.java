@@ -17,7 +17,7 @@ public class GameGUI extends JPanel {
     private ImageIcon minesIcon;
     private JLabel timerLabel;
     private JLabel scoreLabel;
-    private JLabel minesLabel;
+    private JLabel flagsLabel;
     private Timer gameTimer;
     private int secondsPassed;
     private JPanel gamePanel;
@@ -27,7 +27,8 @@ public class GameGUI extends JPanel {
     private int replaySpeed = 1000; // 初始重播速度為1秒
     private Timer replayTimer;
     private JButton speedButton;
-    JPanel labelPanel;
+    private JPanel labelPanel;
+    private int numFlags;
 
     private static class GameSnapshot {
         private Board board;
@@ -86,12 +87,12 @@ public class GameGUI extends JPanel {
         scoreLabel.setBackground(Color.BLACK); // 設置背景色為黑色
         scoreLabel.setPreferredSize(new Dimension(70, 40));
 
-        minesLabel = new JLabel("111");
-        minesLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        minesLabel.setForeground(Color.RED); // 設置文字顏色為紅色
-        minesLabel.setOpaque(true); // 設置為不透明以顯示背景色
-        minesLabel.setBackground(Color.BLACK); // 設置背景色為黑色
-        minesLabel.setPreferredSize(new Dimension(70, 40));
+        flagsLabel = new JLabel("111");
+        flagsLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        flagsLabel.setForeground(Color.RED); // 設置文字顏色為紅色
+        flagsLabel.setOpaque(true); // 設置為不透明以顯示背景色
+        flagsLabel.setBackground(Color.BLACK); // 設置背景色為黑色
+        flagsLabel.setPreferredSize(new Dimension(70, 40));
 
         // 設置特殊的數位顯示器字體
         try {
@@ -178,34 +179,34 @@ public class GameGUI extends JPanel {
             ge.registerFont(digitalFont);
 
             // 使用三個單獨的 JLabel 來顯示時間
-            minesLabel = new JLabel();
-            minesLabel.setLayout(new GridLayout(1, 3));
-            minesLabel.setBackground(Color.BLACK);
-            minesLabel.setOpaque(true);
+            flagsLabel = new JLabel();
+            flagsLabel.setLayout(new GridLayout(1, 3));
+            flagsLabel.setBackground(Color.BLACK);
+            flagsLabel.setOpaque(true);
 
             JLabel digit1 = new JLabel("0");
             digit1.setForeground(Color.RED);
             digit1.setHorizontalAlignment(SwingConstants.RIGHT);
             digit1.setFont(digitalFont);
-            minesLabel.add(digit1);
+            flagsLabel.add(digit1);
 
             JLabel digit2 = new JLabel("0");
             digit2.setForeground(Color.RED);
             digit2.setHorizontalAlignment(SwingConstants.RIGHT);
             digit2.setFont(digitalFont);
-            minesLabel.add(digit2);
+            flagsLabel.add(digit2);
 
             JLabel digit3 = new JLabel("0");
             digit3.setForeground(Color.RED);
             digit3.setHorizontalAlignment(SwingConstants.RIGHT);
             digit3.setFont(digitalFont);
-            minesLabel.add(digit3);
+            flagsLabel.add(digit3);
 
             // 設置特殊的數位顯示器字體
             FontMetrics fm = digit1.getFontMetrics(digitalFont);
             int width = fm.charWidth('0');
             int height = fm.getHeight();
-            minesLabel.setPreferredSize(new Dimension(width * 3, height));
+            flagsLabel.setPreferredSize(new Dimension(width * 3, height));
         } catch (IOException | FontFormatException e) {
             e.printStackTrace();
         }
@@ -234,7 +235,7 @@ public class GameGUI extends JPanel {
 
         labelPanel.add(timerLabel);
         labelPanel.add(scoreLabel);
-        labelPanel.add(minesLabel);
+        labelPanel.add(flagsLabel);
 
         this.add(labelPanel, gbc);
         speedButton = new JButton("Speed: 1x");
@@ -338,10 +339,14 @@ public class GameGUI extends JPanel {
             replayFinished = false;
         }
         secondsPassed = 0;
-        updateTimerLabel("000");
+        updateLabel(timerLabel, "000");
+
         startTimer();
         // 重置棋盤狀態
         board.initBoard();
+        
+        numFlags = board.getNumMines();
+        updateLabel(flagsLabel, String.format("%03d", numFlags));
     }
 
     @Override
@@ -359,20 +364,20 @@ public class GameGUI extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 secondsPassed++;
                 String timeString = String.format("%03d", secondsPassed);
-                updateTimerLabel(timeString); // 更新 timerLabel 的文字
+                updateLabel(timerLabel, timeString); // 更新 timerLabel 的文字
             }
         });
         gameTimer.start();
     }
 
-    private void updateTimerLabel(String timeString) {
+    private void updateLabel(JLabel label, String timeString) {
         String digit1 = timeString.substring(0, 1);
         String digit2 = timeString.substring(1, 2);
         String digit3 = timeString.substring(2, 3);
 
-        ((JLabel) timerLabel.getComponent(0)).setText(digit1);
-        ((JLabel) timerLabel.getComponent(1)).setText(digit2);
-        ((JLabel) timerLabel.getComponent(2)).setText(digit3);
+        ((JLabel) label.getComponent(0)).setText(digit1);
+        ((JLabel) label.getComponent(1)).setText(digit2);
+        ((JLabel) label.getComponent(2)).setText(digit3);
     }
 
     private void showNameInputDialog() {
@@ -497,9 +502,15 @@ public class GameGUI extends JPanel {
 
     private void handleRightClick(int row, int col) {
         if (!board.isRevealed(row, col)) {
+            if (board.isFlagged(row, col)) {
+                numFlags++;
+            } else {
+                numFlags--;
+            }
             board.toggleFlag(row, col);
             updateButtons();
             addGameSnapshot();
+            updateLabel(flagsLabel, String.format("%03d", numFlags));
         }
     }
 

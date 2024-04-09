@@ -45,18 +45,17 @@ public class Board {
     private void loadBoard() {
         File f = new File("./map.txt");
         BufferedReader reader;
+        numMines = 0;
         try {
             reader = new BufferedReader(new FileReader(f));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                for (String part : parts) {
-                    String[] coordinates = part.trim().split(" ");
-                    int x = Integer.parseInt(coordinates[0]) - 1;
-                    int y = coordinates[1].charAt(0) - 'A';
-                    this.placeMine(x, y);
-                    numMines++;
-                }
+            String line = reader.readLine();
+            StringTokenizer st = new StringTokenizer(line, ",");
+            while (st.hasMoreTokens()) {
+                String pair = st.nextToken().strip();
+                String[] pos = pair.split(" ");
+                int x = Integer.parseInt(pos[0]) - 1;
+                int y = pos[1].charAt(0) - 'A';
+                this.placeMine(x, y);
             }
             reader.close();
         } catch (Exception e) {
@@ -105,7 +104,8 @@ public class Board {
                         int r = row + i;
                         int c = col + j;
                         if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                            revealCell(r, c);
+                            if (!isFlagged(r, c))
+                                revealCell(r, c);
                         }
                     }
                 }
@@ -156,6 +156,10 @@ public class Board {
             }
             System.out.println();
         }
+    }
+
+    public int getNumMines() {
+        return numMines;
     }
 
     public int getRows() {
