@@ -9,6 +9,11 @@ function init() {
     score INTEGER
   )`
   query(sql);
+  sql = `CREATE TABLE IF NOT EXISTS board (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    content TEXT
+  )`
+  query(sql);
 }
 
 // create file if not exist

@@ -17,7 +17,7 @@ async function get() {
 }
 
 async function add(content) {
-  let sql = `INSERT INTO board (content) VALUES (${content})`;
+  let sql = `INSERT INTO board (content) VALUES ("${content}")`;
   try {
     await db.query(sql);
   } catch (e) {
