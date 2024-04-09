@@ -58,7 +58,10 @@ public class MineEditorDialog extends JDialog {
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                uploadMap();
+                if (remainingMines == 0) {
+                    uploadMap();
+                    dispose();
+                }
             }
         });
         controlPanel.add(saveButton);

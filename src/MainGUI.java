@@ -93,11 +93,6 @@ public class MainGUI extends JPanel {
         });
     }
 
-    private void multiplayerGame() {
-        controller.switchPanel("GAME");
-    }
-
-
     private void showGameGUI() {
         String[] options = { "Single Player", "Multiplayer" };
         int choice = JOptionPane.showOptionDialog(
@@ -111,9 +106,9 @@ public class MainGUI extends JPanel {
                 options[0]);
 
         if (choice == 0) {
-            JOptionPane.showMessageDialog(null, "You chose Single Player");
+            controller.switchPanel("SGAME");
         } else if (choice == 1) {
-            multiplayerGame();
+            controller.switchPanel("GAME");
         }
     }
 

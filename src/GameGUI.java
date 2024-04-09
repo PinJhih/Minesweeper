@@ -30,6 +30,7 @@ public class GameGUI extends JPanel {
     private JPanel labelPanel;
     private int numFlags;
     private int score;
+    private boolean multiplayer;
 
     private static class GameSnapshot {
         private Board board;
@@ -49,9 +50,10 @@ public class GameGUI extends JPanel {
         }
     }
 
-    public GameGUI(Controller controller) {
+    public GameGUI(Controller controller, boolean multiplayer) {
         this.controller = controller;
-        this.board = new Board(8, 8, true);
+        this.multiplayer = multiplayer;
+        this.board = new Board(8, 8, multiplayer);
         this.buttons = new JButton[board.getRows()][board.getCols()];
         bombIcon = resizeImageIcon(new ImageIcon(getClass().getResource("./img/bomb.png")), 40, 40);
         flagIcon = resizeImageIcon(new ImageIcon(getClass().getResource("./img/flag.png")), 40, 40);
@@ -345,7 +347,7 @@ public class GameGUI extends JPanel {
 
         startTimer();
         // 重置棋盤狀態
-        board.initBoard(true);
+        board.initBoard(multiplayer);
 
         numFlags = board.getNumMines();
         updateLabel(flagsLabel, String.format("%03d", numFlags));
@@ -415,7 +417,6 @@ public class GameGUI extends JPanel {
                 if (name.trim().isEmpty()) {
                     JOptionPane.showMessageDialog(this, "Name is required!", "Error", JOptionPane.ERROR_MESSAGE);
                 } else {
-
                     JOptionPane.showMessageDialog(this, "Name: " + name + " Score:" + score_, "Score",
                             JOptionPane.PLAIN_MESSAGE);
                     uploadScore(name, score_); // 上傳成績
@@ -496,7 +497,8 @@ public class GameGUI extends JPanel {
                 if (replayFinished) { // 假設isReplayDialogShowing是一個方法，用於檢查showReplayDialog是否正在顯示
                     // 停止postReplayTimer
                     ((Timer) e.getSource()).stop();
-                    showNameInputDialog(); // 彈出對話框讓玩家輸入名稱
+                    if (multiplayer)
+                        showNameInputDialog(); // 彈出對話框讓玩家輸入名稱
                     controller.switchPanel("MAIN");
                 }
             }

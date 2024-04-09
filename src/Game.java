@@ -1,42 +1,47 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class Game implements Controller{
+public class Game implements Controller {
     private JFrame mainFrame;
     private JPanel displayPanel;
 
     private MainGUI mainGUI;
     private GameGUI gameGUI;
-    private GameGUI sgameGUI;
+    private GameGUI sGameGUI;
     private RuleGUI ruleGUI;
     private LeaderBoard leadGUI;
-    public Game(){
+
+    public Game() {
         initialize();
     };
 
     @Override
-    public void switchPanel(String panelName){
+    public void switchPanel(String panelName) {
         CardLayout cardLayout = (CardLayout) displayPanel.getLayout();
         cardLayout.show(displayPanel, panelName);
-        if(panelName.equals("GAME"))
+        if (panelName.equals("GAME"))
             gameGUI.resetGame(true);
+        if (panelName.equals("SGAME"))
+            sGameGUI.resetGame(true);
     }
 
-    private void initialize(){
+    private void initialize() {
         mainFrame = new JFrame("Minesweeper Game");
         mainFrame.setSize(900, 550);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         displayPanel = new JPanel();
-        displayPanel.setLayout(new CardLayout()); 
+        displayPanel.setLayout(new CardLayout());
         mainGUI = new MainGUI(this);
         displayPanel.add(mainGUI, "MAIN");
 
-        gameGUI = new GameGUI(this);
+        gameGUI = new GameGUI(this, true);
         displayPanel.add(gameGUI, "GAME");
 
         ruleGUI = new RuleGUI(this);
         displayPanel.add(ruleGUI, "RULE");
 
+        sGameGUI = new GameGUI(this, false);
+        displayPanel.add(sGameGUI, "SGAME");
 
         leadGUI = new LeaderBoard(this);
         displayPanel.add(leadGUI, "LEAD");

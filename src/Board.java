@@ -66,8 +66,8 @@ public class Board {
     }
 
     private void loadBoard(boolean multiplayer) {
-        numMines = 0;
         if (multiplayer) {
+            numMines = 0;
             String line = fetchBoard();
             StringTokenizer st = new StringTokenizer(line, ",");
             while (st.hasMoreTokens()) {
@@ -78,6 +78,7 @@ public class Board {
                 this.placeMine(x, y);
             }
         } else {
+            numMines = 0;
             File f = new File("./map.txt");
             BufferedReader reader;
             try {
@@ -91,6 +92,8 @@ public class Board {
                     int y = pos[1].charAt(0) - 'A';
                     this.placeMine(x, y);
                 }
+                
+                System.out.println("[Info] read board " + line);
                 reader.close();
             } catch (Exception e) {
                 e.printStackTrace();
