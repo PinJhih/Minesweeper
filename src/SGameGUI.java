@@ -1,4 +1,5 @@
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -6,9 +7,8 @@ import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.net.*;
 
-public class GameGUI extends JPanel {
+public class SGameGUI extends JPanel {
     private Controller controller;
     private Board board;
     private JButton[][] buttons;
@@ -30,6 +30,7 @@ public class GameGUI extends JPanel {
     private JPanel labelPanel;
     private int numFlags;
     private int score;
+    private int stage;
 
     private static class GameSnapshot {
         private Board board;
@@ -49,7 +50,7 @@ public class GameGUI extends JPanel {
         }
     }
 
-    public GameGUI(Controller controller) {
+    public SGameGUI(Controller controller) {
         this.controller = controller;
         this.board = new Board(8, 8, "");
         this.buttons = new JButton[board.getRows()][board.getCols()];
@@ -60,6 +61,7 @@ public class GameGUI extends JPanel {
         this.currentSnapshotIndex = -1; // 初始化為-1，表示沒有快照
         this.replayFinished = false;
         this.secondsPassed = 0;
+        this.stage = 1;
         initialize();
         startTimer();
     }
@@ -345,7 +347,7 @@ public class GameGUI extends JPanel {
 
         startTimer();
         // 重置棋盤狀態
-        board.initBoard("NET");
+        board.initBoard(String.format("%d", stage));
 
         numFlags = board.getNumMines();
         updateLabel(flagsLabel, String.format("%03d", numFlags));
@@ -391,58 +393,6 @@ public class GameGUI extends JPanel {
         ((JLabel) label.getComponent(2)).setText(digit3);
     }
 
-    private void showNameInputDialog() {
-        int score_ = this.score;
-        String name = "";
-        while (name.trim().isEmpty()) {
-            JTextField textField = new JTextField();
-            Object[] message = {
-                    "Enter your name:", textField
-            };
-            int option = JOptionPane.showOptionDialog(
-                    this,
-                    message,
-                    "Name Input",
-                    JOptionPane.OK_OPTION,
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    new Object[] { "OK" },
-                    "OK");
-
-            if (option == JOptionPane.OK_OPTION) {
-                name = textField.getText();
-
-                if (name.trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Name is required!", "Error", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(this, "Name: " + name + " Score:" + score_, "Score",
-                            JOptionPane.PLAIN_MESSAGE);
-                    uploadScore(name, score_); // 上傳成績
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Cancel upload score!", "Warn", JOptionPane.WARNING_MESSAGE);
-                JOptionPane.showMessageDialog(this, " Score:" + score_, "Score",
-                        JOptionPane.PLAIN_MESSAGE);
-                break;
-            }
-        }
-    }
-
-    private void uploadScore(String name, int score) {
-        try {
-            String urlStr = String.format("http://localhost:3000/api/records/%s/%d", name, score);
-            URL url = new URL(urlStr);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("POST");
-
-            int resCode = connection.getResponseCode();
-            System.out.println("[Info] Upload score (" + resCode + ")");
-            connection.disconnect();
-        } catch (Exception e) {
-            System.err.println("[Error] Cannot upload score\n" + e);
-        }
-    }
-
     private void showReplayDialog(String gameResult) {
         int choice = JOptionPane.showOptionDialog(
                 this,
@@ -458,6 +408,8 @@ public class GameGUI extends JPanel {
             replayGame();
         } else {
             replayFinished = true;
+            if (board.getStatus() == Board.GameStatus.WIN)
+                nextStageDialog();
         }
     }
 
@@ -486,22 +438,27 @@ public class GameGUI extends JPanel {
             updateLabel(scoreLabel, String.format("%03d", score));
             this.gameFailed();
         }
-        showReplayDialog(gameResult);
+
+        if (board.getStatus() == Board.GameStatus.WIN)
+            nextStageDialog();
+
+        // showReplayDialog(gameResult);
 
         // 使用計時器來檢查showReplayDialog是否已經關閉
-        Timer postReplayTimer = new Timer(1000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (replayFinished) { // 假設isReplayDialogShowing是一個方法，用於檢查showReplayDialog是否正在顯示
-                    // 停止postReplayTimer
-                    ((Timer) e.getSource()).stop();
-                    showNameInputDialog(); // 彈出對話框讓玩家輸入名稱
-                    controller.switchPanel("MAIN");
-                }
-            }
-        });
+        // Timer postReplayTimer = new Timer(1000, new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent e) {
+        // if (replayFinished) { //
+        // 假設isReplayDialogShowing是一個方法，用於檢查showReplayDialog是否正在顯示
+        // // 停止postReplayTimer
+        // ((Timer) e.getSource()).stop();
 
-        postReplayTimer.start();
+        // if (board.getStatus() != Board.GameStatus.WIN)
+        // controller.switchPanel("MAIN");
+        // }
+        // }
+        // });
+        // postReplayTimer.start();
     }
 
     private void gameFailed() {
@@ -606,6 +563,13 @@ public class GameGUI extends JPanel {
                         replayFinished = true;
                         gameTimer.stop();
                         ((Timer) e.getSource()).stop();
+
+                        if (board.getStatus() == Board.GameStatus.WIN) {
+                            if (stage != 4)
+                                nextStageDialog();
+                            else
+                                finish();
+                        }
                     }
                 }
             }
@@ -613,4 +577,27 @@ public class GameGUI extends JPanel {
         replayTimer.start();
     }
 
+    private void nextStageDialog() {
+        int choice = JOptionPane.showOptionDialog(
+                this,
+                "Next Stage?",
+                "Game Over",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.INFORMATION_MESSAGE,
+                null,
+                new String[] { "Yes", "No" },
+                "Yes");
+
+        if (choice == JOptionPane.YES_OPTION) {
+            stage++;
+            resetGame(false);
+        } else {
+            controller.switchPanel("MAIN");
+        }
+    }
+
+    private void finish() {
+        JOptionPane.showMessageDialog(this, "Congratulations!!");
+        controller.switchPanel("MAIN");
+    }
 }

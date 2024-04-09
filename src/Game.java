@@ -7,7 +7,7 @@ public class Game implements Controller {
 
     private MainGUI mainGUI;
     private GameGUI gameGUI;
-    private GameGUI sGameGUI;
+    private SGameGUI sGameGUI;
     private RuleGUI ruleGUI;
     private LeaderBoard leadGUI;
 
@@ -34,13 +34,13 @@ public class Game implements Controller {
         mainGUI = new MainGUI(this);
         displayPanel.add(mainGUI, "MAIN");
 
-        gameGUI = new GameGUI(this, true);
+        gameGUI = new GameGUI(this);
         displayPanel.add(gameGUI, "GAME");
 
         ruleGUI = new RuleGUI(this);
         displayPanel.add(ruleGUI, "RULE");
 
-        sGameGUI = new GameGUI(this, false);
+        sGameGUI = new SGameGUI(this);
         displayPanel.add(sGameGUI, "SGAME");
 
         leadGUI = new LeaderBoard(this);

@@ -68,7 +68,7 @@ public class MineEditorDialog extends JDialog {
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (remainingMines == 0) {
+                if (true) {
                     uploadMap();
                     dispose();
                 }
@@ -118,7 +118,7 @@ public class MineEditorDialog extends JDialog {
     // 切換地雷狀態
     private void toggleMine(JButton button, int row, int col) {
         if (button.getIcon() == null) {
-            if (remainingMines > 0) { // 檢查是否還有剩餘地雷可放置
+            if (true) { // 檢查是否還有剩餘地雷可放置
                 button.setIcon(bombIcon);
                 remainingMines--;
             } else {

@@ -22,14 +22,15 @@ public class Board {
         LOSE
     }
 
-    public Board(int rows, int cols, boolean multiplayer) {
+    public Board(int rows, int cols, String mode) {
         this.rows = rows;
         this.cols = cols;
-        initBoard(multiplayer);
+        initBoard(mode);
         this.status = GameStatus.PLAYING;
     }
 
-    public void initBoard(boolean multiplayer) {
+    public void initBoard(String mode) {
+        System.out.println("Mode" + mode);
         this.numMines = 0;
         cellsRemain = rows * cols;
 
@@ -39,7 +40,7 @@ public class Board {
         flagged = new boolean[rows][cols];
         surroundingMines = new int[rows][cols];
 
-        loadBoard(multiplayer); // Reload mines
+        loadBoard(mode); // Reload mines
         updateSurroundingMines(); // Update surrounding mines count
     }
 
@@ -65,8 +66,10 @@ public class Board {
         return "1 C,4 B,6 C,3 D,7 H,6 B,3 A,2 E,4 A,7 E";
     }
 
-    private void loadBoard(boolean multiplayer) {
-        if (multiplayer) {
+    private void loadBoard(String mode) {
+        if (mode.length() == 0)
+            return;
+        if (mode.equals("NET")) {
             numMines = 0;
             String line = fetchBoard();
             StringTokenizer st = new StringTokenizer(line, ",");
@@ -79,7 +82,7 @@ public class Board {
             }
         } else {
             numMines = 0;
-            File f = new File("./map.txt");
+            File f = new File("./map" + mode + ".txt");
             BufferedReader reader;
             try {
                 reader = new BufferedReader(new FileReader(f));
@@ -92,7 +95,7 @@ public class Board {
                     int y = pos[1].charAt(0) - 'A';
                     this.placeMine(x, y);
                 }
-                
+
                 System.out.println("[Info] read board " + line);
                 reader.close();
             } catch (Exception e) {
@@ -240,7 +243,7 @@ public class Board {
     }
 
     public Board clone() {
-        Board clonedBoard = new Board(this.rows, this.cols, false);
+        Board clonedBoard = new Board(this.rows, this.cols, "");
 
         // Clone mines, revealed, flagged, and surroundingMines arrays
         for (int i = 0; i < this.rows; i++) {
