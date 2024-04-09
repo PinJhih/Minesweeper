@@ -47,16 +47,17 @@ public class Board {
         BufferedReader reader;
         try {
             reader = new BufferedReader(new FileReader(f));
-            String line = reader.readLine();
-            StringTokenizer st = new StringTokenizer(line, ",");
-            while (st.hasMoreTokens()) {
-                String pair = st.nextToken().strip();
-                String[] pos = pair.split(" ");
-                int x = Integer.parseInt(pos[0]) - 1;
-                int y = pos[1].charAt(0) - 'A';
-                this.placeMine(x, y);
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                for (String part : parts) {
+                    String[] coordinates = part.trim().split(" ");
+                    int x = Integer.parseInt(coordinates[0]) - 1;
+                    int y = coordinates[1].charAt(0) - 'A';
+                    this.placeMine(x, y);
+                    numMines++;
+                }
             }
-
             reader.close();
         } catch (Exception e) {
             e.printStackTrace();
