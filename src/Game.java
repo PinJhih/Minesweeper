@@ -8,6 +8,7 @@ public class Game implements Controller{
     private MainGUI mainGUI;
     private GameGUI gameGUI;
     private RuleGUI ruleGUI;
+    private LeaderBoard leadGUI;
     public Game(){
         initialize();
     };
@@ -34,6 +35,11 @@ public class Game implements Controller{
 
         ruleGUI = new RuleGUI(this);
         displayPanel.add(ruleGUI, "RULE");
+
+
+        leadGUI = new LeaderBoard(this);
+        displayPanel.add(leadGUI, "LEAD");
+
         mainFrame.add(displayPanel, BorderLayout.CENTER);
         mainFrame.setVisible(true);
     };

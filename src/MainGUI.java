@@ -102,7 +102,7 @@ public class MainGUI extends JPanel {
     }
 
     private void showLeaderboard() {
-        JOptionPane.showMessageDialog(this, "排行榜尚未實現，敬請期待！", "排行榜", JOptionPane.INFORMATION_MESSAGE);
+        controller.switchPanel("LEAD");
     }
 
     //編輯地圖開頭
