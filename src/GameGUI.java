@@ -16,6 +16,8 @@ public class GameGUI extends JPanel {
     private ImageIcon flagIcon;
     private ImageIcon minesIcon;
     private JLabel timerLabel;
+    private JLabel scoreLabel;
+    private JLabel minesLabel;
     private Timer gameTimer;
     private int secondsPassed;
     private JPanel gamePanel;
@@ -25,6 +27,7 @@ public class GameGUI extends JPanel {
     private int replaySpeed = 1000; // 初始重播速度為1秒
     private Timer replayTimer;
     private JButton speedButton;
+    JPanel labelPanel;
 
     private static class GameSnapshot {
         private Board board;
@@ -68,12 +71,28 @@ public class GameGUI extends JPanel {
         gbc.weightx = 1;
         gbc.weighty = 0;
         gbc.anchor = GridBagConstraints.NORTH;
+
         timerLabel = new JLabel("000");
         timerLabel.setHorizontalAlignment(SwingConstants.CENTER);
         timerLabel.setForeground(Color.RED); // 設置文字顏色為紅色
         timerLabel.setOpaque(true); // 設置為不透明以顯示背景色
         timerLabel.setBackground(Color.BLACK); // 設置背景色為黑色
         timerLabel.setPreferredSize(new Dimension(70, 40));
+
+        scoreLabel = new JLabel("111");
+        scoreLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        scoreLabel.setForeground(Color.RED); // 設置文字顏色為紅色
+        scoreLabel.setOpaque(true); // 設置為不透明以顯示背景色
+        scoreLabel.setBackground(Color.BLACK); // 設置背景色為黑色
+        scoreLabel.setPreferredSize(new Dimension(70, 40));
+
+        minesLabel = new JLabel("111");
+        minesLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        minesLabel.setForeground(Color.RED); // 設置文字顏色為紅色
+        minesLabel.setOpaque(true); // 設置為不透明以顯示背景色
+        minesLabel.setBackground(Color.BLACK); // 設置背景色為黑色
+        minesLabel.setPreferredSize(new Dimension(70, 40));
+
         // 設置特殊的數位顯示器字體
         try {
             Font digitalFont = Font.createFont(Font.TRUETYPE_FONT, new File("./font/timerFont.ttf")).deriveFont(48f);
@@ -109,11 +128,115 @@ public class GameGUI extends JPanel {
             int width = fm.charWidth('0');
             int height = fm.getHeight();
             timerLabel.setPreferredSize(new Dimension(width * 3, height));
-
         } catch (IOException | FontFormatException e) {
             e.printStackTrace();
         }
-        this.add(timerLabel, gbc);
+
+        // 設置特殊的數位顯示器字體
+        try {
+            Font digitalFont = Font.createFont(Font.TRUETYPE_FONT, new File("./font/timerFont.ttf")).deriveFont(48f);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(digitalFont);
+
+            // 使用三個單獨的 JLabel 來顯示時間
+            scoreLabel = new JLabel();
+            scoreLabel.setLayout(new GridLayout(1, 3));
+            scoreLabel.setBackground(Color.BLACK);
+            scoreLabel.setOpaque(true);
+
+            JLabel digit1 = new JLabel("0");
+            digit1.setForeground(Color.RED);
+            digit1.setHorizontalAlignment(SwingConstants.RIGHT);
+            digit1.setFont(digitalFont);
+            scoreLabel.add(digit1);
+
+            JLabel digit2 = new JLabel("0");
+            digit2.setForeground(Color.RED);
+            digit2.setHorizontalAlignment(SwingConstants.RIGHT);
+            digit2.setFont(digitalFont);
+            scoreLabel.add(digit2);
+
+            JLabel digit3 = new JLabel("0");
+            digit3.setForeground(Color.RED);
+            digit3.setHorizontalAlignment(SwingConstants.RIGHT);
+            digit3.setFont(digitalFont);
+            scoreLabel.add(digit3);
+
+            // 設置特殊的數位顯示器字體
+            FontMetrics fm = digit1.getFontMetrics(digitalFont);
+            int width = fm.charWidth('0');
+            int height = fm.getHeight();
+            scoreLabel.setPreferredSize(new Dimension(width * 3, height));
+        } catch (IOException | FontFormatException e) {
+            e.printStackTrace();
+        }
+
+        // 設置特殊的數位顯示器字體
+        try {
+            Font digitalFont = Font.createFont(Font.TRUETYPE_FONT, new File("./font/timerFont.ttf")).deriveFont(48f);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(digitalFont);
+
+            // 使用三個單獨的 JLabel 來顯示時間
+            minesLabel = new JLabel();
+            minesLabel.setLayout(new GridLayout(1, 3));
+            minesLabel.setBackground(Color.BLACK);
+            minesLabel.setOpaque(true);
+
+            JLabel digit1 = new JLabel("0");
+            digit1.setForeground(Color.RED);
+            digit1.setHorizontalAlignment(SwingConstants.RIGHT);
+            digit1.setFont(digitalFont);
+            minesLabel.add(digit1);
+
+            JLabel digit2 = new JLabel("0");
+            digit2.setForeground(Color.RED);
+            digit2.setHorizontalAlignment(SwingConstants.RIGHT);
+            digit2.setFont(digitalFont);
+            minesLabel.add(digit2);
+
+            JLabel digit3 = new JLabel("0");
+            digit3.setForeground(Color.RED);
+            digit3.setHorizontalAlignment(SwingConstants.RIGHT);
+            digit3.setFont(digitalFont);
+            minesLabel.add(digit3);
+
+            // 設置特殊的數位顯示器字體
+            FontMetrics fm = digit1.getFontMetrics(digitalFont);
+            int width = fm.charWidth('0');
+            int height = fm.getHeight();
+            minesLabel.setPreferredSize(new Dimension(width * 3, height));
+        } catch (IOException | FontFormatException e) {
+            e.printStackTrace();
+        }
+
+        labelPanel = new JPanel(new GridLayout(2, 3, 25, 0));
+        labelPanel.setOpaque(true);
+        labelPanel.setBackground(Color.BLACK);
+
+        JLabel timeLabel_ = new JLabel("Time");
+        timeLabel_.setHorizontalAlignment(SwingConstants.CENTER); // 將文字置中
+        timeLabel_.setForeground(Color.WHITE); // 設置文字顏色為白色
+        timeLabel_.setFont(timeLabel_.getFont().deriveFont(Font.BOLD, 20));
+        labelPanel.add(timeLabel_);
+
+        JLabel scoreLabel_ = new JLabel("Score");
+        scoreLabel_.setHorizontalAlignment(SwingConstants.CENTER); // 將文字置中
+        scoreLabel_.setForeground(Color.WHITE); // 設置文字顏色為白色
+        scoreLabel_.setFont(scoreLabel_.getFont().deriveFont(Font.BOLD, 20));
+        labelPanel.add(scoreLabel_);
+
+        JLabel minesLabel_ = new JLabel("#Flags");
+        minesLabel_.setHorizontalAlignment(SwingConstants.CENTER); // 將文字置中
+        minesLabel_.setForeground(Color.WHITE); // 設置文字顏色為白色
+        minesLabel_.setFont(minesLabel_.getFont().deriveFont(Font.BOLD, 20));
+        labelPanel.add(minesLabel_);
+
+        labelPanel.add(timerLabel);
+        labelPanel.add(scoreLabel);
+        labelPanel.add(minesLabel);
+
+        this.add(labelPanel, gbc);
         speedButton = new JButton("Speed: 1x");
         speedButton.setVisible(false);
         speedButton.addActionListener(e -> {
@@ -208,7 +331,7 @@ public class GameGUI extends JPanel {
                 button.setEnabled(true);
             }
         }
-        timerLabel.setVisible(true);
+        labelPanel.setVisible(true);
         speedButton.setVisible(false);
         if (clear) {
             gameSnapshots.clear();
@@ -430,7 +553,7 @@ public class GameGUI extends JPanel {
         resetGame(false);
         gameTimer.stop();
         currentSnapshotIndex = 0;
-        timerLabel.setVisible(false);
+        labelPanel.setVisible(false);
         speedButton.setVisible(true);
 
         Timer replayTimer = new Timer(250, new ActionListener() {
