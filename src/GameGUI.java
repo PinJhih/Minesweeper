@@ -51,7 +51,7 @@ public class GameGUI extends JPanel {
 
     public GameGUI(Controller controller) {
         this.controller = controller;
-        this.board = new Board(8, 8);
+        this.board = new Board(8, 8, true);
         this.buttons = new JButton[board.getRows()][board.getCols()];
         bombIcon = resizeImageIcon(new ImageIcon(getClass().getResource("./img/bomb.png")), 40, 40);
         flagIcon = resizeImageIcon(new ImageIcon(getClass().getResource("./img/flag.png")), 40, 40);
@@ -345,7 +345,7 @@ public class GameGUI extends JPanel {
 
         startTimer();
         // 重置棋盤狀態
-        board.initBoard();
+        board.initBoard(true);
 
         numFlags = board.getNumMines();
         updateLabel(flagsLabel, String.format("%03d", numFlags));

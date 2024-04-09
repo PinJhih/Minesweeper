@@ -1,8 +1,9 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.Scanner;
+import java.io.InputStreamReader;
 import java.util.StringTokenizer;
+import java.net.*;
 
 public class Board {
     private int rows;
@@ -21,14 +22,14 @@ public class Board {
         LOSE
     }
 
-    public Board(int rows, int cols) {
+    public Board(int rows, int cols, boolean multiplayer) {
         this.rows = rows;
         this.cols = cols;
-        initBoard();
+        initBoard(multiplayer);
         this.status = GameStatus.PLAYING;
     }
 
-    public void initBoard() {
+    public void initBoard(boolean multiplayer) {
         this.numMines = 0;
         cellsRemain = rows * cols;
 
@@ -38,17 +39,36 @@ public class Board {
         flagged = new boolean[rows][cols];
         surroundingMines = new int[rows][cols];
 
-        loadBoard(); // Reload mines
+        loadBoard(multiplayer); // Reload mines
         updateSurroundingMines(); // Update surrounding mines count
     }
 
-    private void loadBoard() {
-        File f = new File("./map.txt");
-        BufferedReader reader;
-        numMines = 0;
+    private String fetchBoard() {
         try {
-            reader = new BufferedReader(new FileReader(f));
-            String line = reader.readLine();
+            URL url = new URL("http://localhost:3000/api/board");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line;
+            StringBuilder response = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+            connection.disconnect();
+
+            String res = response.toString();
+            System.out.println("[Info] Get board " + res);
+            return response.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "1 C,4 B,6 C,3 D,7 H,6 B,3 A,2 E,4 A,7 E";
+    }
+
+    private void loadBoard(boolean multiplayer) {
+        numMines = 0;
+        if (multiplayer) {
+            String line = fetchBoard();
             StringTokenizer st = new StringTokenizer(line, ",");
             while (st.hasMoreTokens()) {
                 String pair = st.nextToken().strip();
@@ -57,9 +77,24 @@ public class Board {
                 int y = pos[1].charAt(0) - 'A';
                 this.placeMine(x, y);
             }
-            reader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            File f = new File("./map.txt");
+            BufferedReader reader;
+            try {
+                reader = new BufferedReader(new FileReader(f));
+                String line = reader.readLine();
+                StringTokenizer st = new StringTokenizer(line, ",");
+                while (st.hasMoreTokens()) {
+                    String pair = st.nextToken().strip();
+                    String[] pos = pair.split(" ");
+                    int x = Integer.parseInt(pos[0]) - 1;
+                    int y = pos[1].charAt(0) - 'A';
+                    this.placeMine(x, y);
+                }
+                reader.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -202,7 +237,7 @@ public class Board {
     }
 
     public Board clone() {
-        Board clonedBoard = new Board(this.rows, this.cols);
+        Board clonedBoard = new Board(this.rows, this.cols, false);
 
         // Clone mines, revealed, flagged, and surroundingMines arrays
         for (int i = 0; i < this.rows; i++) {
@@ -218,28 +253,5 @@ public class Board {
         clonedBoard.status = this.status;
 
         return clonedBoard;
-    }
-
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        Board b = new Board(8, 8);
-        b.printBoard();
-
-        while (!b.isGameOver()) {
-            System.out.println("Enter x y to reveal a cell. E.g., 3 A");
-            System.out.print("Your move: ");
-
-            int x = sc.nextInt() - 1;
-            int y = sc.nextLine().strip().charAt(0) - 'A';
-
-            if (x < 0 || y < 0 || x >= 8 || y >= 8) {
-                System.out.println("Invalid move!");
-                continue;
-            }
-
-            b.revealCell(x, y);
-            b.printBoard();
-        }
-        sc.close();
     }
 }

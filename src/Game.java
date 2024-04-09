@@ -7,6 +7,7 @@ public class Game implements Controller{
 
     private MainGUI mainGUI;
     private GameGUI gameGUI;
+    private GameGUI sgameGUI;
     private RuleGUI ruleGUI;
     private LeaderBoard leadGUI;
     public Game(){

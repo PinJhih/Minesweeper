@@ -6,7 +6,7 @@ public class MainGUI extends JPanel {
     private Controller controller;
 
     public MainGUI(Controller controller) {
-        this.controller = controller; 
+        this.controller = controller;
         initialize();
     }
 
@@ -93,8 +93,28 @@ public class MainGUI extends JPanel {
         });
     }
 
-    private void showGameGUI() {
+    private void multiplayerGame() {
         controller.switchPanel("GAME");
+    }
+
+
+    private void showGameGUI() {
+        String[] options = { "Single Player", "Multiplayer" };
+        int choice = JOptionPane.showOptionDialog(
+                null,
+                "Select Game Mode:",
+                "Game Mode",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]);
+
+        if (choice == 0) {
+            JOptionPane.showMessageDialog(null, "You chose Single Player");
+        } else if (choice == 1) {
+            multiplayerGame();
+        }
     }
 
     private void showRules() {
@@ -105,10 +125,8 @@ public class MainGUI extends JPanel {
         controller.switchPanel("LEAD");
     }
 
-    //編輯地圖開頭
     private void editMap() {
         MineEditorDialog mineEditorDialog = new MineEditorDialog(controller);
         mineEditorDialog.setVisible(true);
     }
-    //編輯地圖結尾
 }
