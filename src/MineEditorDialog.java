@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Random;
 
 public class MineEditorDialog extends JDialog {
     private Controller controller;
@@ -54,6 +55,15 @@ public class MineEditorDialog extends JDialog {
         updateRemainingMinesLabel();
 
         JPanel controlPanel = new JPanel();
+        JButton randButton = new JButton("Random");
+        randButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                random();
+            }
+        });
+        controlPanel.add(randButton);
+
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(new ActionListener() {
             @Override
@@ -81,6 +91,28 @@ public class MineEditorDialog extends JDialog {
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.pack();
         this.setLocationRelativeTo(null);
+    }
+
+    private void random() {
+        remainingMines = rows * cols / 6;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                buttons[i][j].setIcon(null);
+            }
+        }
+
+        Random random = new Random();
+        for (int i = 0; i < rows * cols / 6; i++) {
+            int x = random.nextInt(rows);
+            int y = random.nextInt(cols);
+
+            if (buttons[x][y].getIcon() != null) {
+                i--;
+                continue;
+            }
+            toggleMine(buttons[x][y], x, y);
+        }
+        remainingMines = 0;
     }
 
     // 切換地雷狀態
