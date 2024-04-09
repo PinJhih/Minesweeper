@@ -82,8 +82,12 @@ public class MineEditorDialog extends JDialog {
             button.setText("");
             remainingMines++;
         } else {
-            button.setText("M");
-            remainingMines--;
+            if (remainingMines > 0) { // 檢查是否還有剩餘地雷可放置
+                button.setText("M");
+                remainingMines--;
+            } else {
+                JOptionPane.showMessageDialog(this, "已達到最大地雷數量限制", "提示", JOptionPane.WARNING_MESSAGE);
+            }
         }
         updateRemainingMinesLabel(); // 更新剩餘地雷數標籤
     }
@@ -100,22 +104,29 @@ public class MineEditorDialog extends JDialog {
     // 將地圖存儲為文件
     private void saveMapToFile() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("保存地圖文件");
+        fileChooser.setDialogTitle("保存地图文件");
         int userSelection = fileChooser.showSaveDialog(this);
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             File fileToSave = fileChooser.getSelectedFile();
             try (FileWriter writer = new FileWriter(fileToSave)) {
+                StringBuilder mapData = new StringBuilder();
                 for (int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         if (buttons[i][j].getText().equals("M")) {
-                            writer.write((i + 1) + " " + (char) ('A' + j) + System.lineSeparator());
+                            // 格式化地雷位置数据，用逗号分隔行号和列号
+                            mapData.append((i + 1)).append(" ").append((char) ('A' + j)).append(",");
                         }
                     }
                 }
-                writer.close();
-                JOptionPane.showMessageDialog(this, "地圖保存成功！", "成功", JOptionPane.INFORMATION_MESSAGE);
+                // 删除末尾的逗号
+                if (mapData.length() > 0) {
+                    mapData.deleteCharAt(mapData.length() - 1);
+                }
+                // 写入地图数据到文件
+                writer.write(mapData.toString());
+                JOptionPane.showMessageDialog(this, "地图保存成功！", "成功", JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "保存地圖時出錯： " + e.getMessage(), "錯誤", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "保存地图时出错： " + e.getMessage(), "错误", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
