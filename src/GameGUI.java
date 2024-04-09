@@ -14,6 +14,7 @@ public class GameGUI extends JPanel {
     private JButton[][] buttons;
     private ImageIcon bombIcon;
     private ImageIcon flagIcon;
+    private ImageIcon minesIcon;
     private JLabel timerLabel;
     private Timer gameTimer;
     private int secondsPassed;
@@ -49,6 +50,7 @@ public class GameGUI extends JPanel {
         this.buttons = new JButton[board.getRows()][board.getCols()];
         bombIcon = resizeImageIcon(new ImageIcon(getClass().getResource("./img/bomb.png")), 40, 40);
         flagIcon = resizeImageIcon(new ImageIcon(getClass().getResource("./img/flag.png")), 40, 40);
+        minesIcon = resizeImageIcon(new ImageIcon(getClass().getResource("./img/mines.png")), 40, 40);
         this.gameSnapshots = new ArrayList<>();
         this.currentSnapshotIndex = -1; // 初始化為-1，表示沒有快照
         this.replayFinished = false;
@@ -196,7 +198,6 @@ public class GameGUI extends JPanel {
     public void resetGame(boolean clear) {
         // 停止計時器並重置秒數
         gameTimer.stop();
-        
 
         // 重置按鈕狀態和圖標
         for (int i = 0; i < board.getRows(); i++) {
@@ -209,9 +210,9 @@ public class GameGUI extends JPanel {
         }
         timerLabel.setVisible(true);
         speedButton.setVisible(false);
-        if(clear){
+        if (clear) {
             gameSnapshots.clear();
-            replayFinished = false; 
+            replayFinished = false;
         }
         secondsPassed = 0;
         updateTimerLabel("000");
@@ -317,7 +318,7 @@ public class GameGUI extends JPanel {
 
         if (choice == JOptionPane.YES_OPTION) {
             replayGame();
-        }else{
+        } else {
             replayFinished = true;
         }
     }
@@ -340,6 +341,7 @@ public class GameGUI extends JPanel {
             gameResult = "Win!";
         } else if (board.getStatus() == Board.GameStatus.LOSE) {
             gameResult = "Failure!";
+            this.gameFailed();
         }
         showReplayDialog(gameResult);
 
@@ -357,6 +359,17 @@ public class GameGUI extends JPanel {
         });
 
         postReplayTimer.start();
+    }
+
+    private void gameFailed() {
+        for (int i = 0; i < board.getRows(); i++) {
+            for (int j = 0; j < board.getCols(); j++) {
+                if (board.isMine(i, j)) {
+                    JButton button = buttons[i][j];
+                    button.setIcon(minesIcon);
+                }
+            }
+        }
     }
 
     private void handleRightClick(int row, int col) {
